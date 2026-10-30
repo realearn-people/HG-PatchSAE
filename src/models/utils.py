@@ -96,7 +96,8 @@ def load_state_dict_without_prompt_learner(ckpt_path: str) -> dict:
 def get_base_clip(backbone: str) -> tuple[CLIPModel, CLIPProcessor]:
     """Load base CLIP model and processor."""
     model = CLIPModel.from_pretrained(backbone)
-    processor = CLIPProcessor.from_pretrained(backbone)
+    # HG-PatchSAE: resize to 224x224 instead of center-cropping.
+    processor = CLIPProcessor.from_pretrained(backbone, do_center_crop=False, size={"height": 224, "width": 224})
     return model, processor
 
 

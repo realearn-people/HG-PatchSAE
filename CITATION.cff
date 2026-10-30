@@ -1,0 +1,44 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the paper below and the PatchSAE paper it builds on."
+title: "HG-PatchSAE"
+type: software
+license: MIT
+repository-code: "https://github.com/realearn-people/HG-PatchSAE"
+authors:
+  - family-names: Yimmark
+    given-names: Chavakan
+    orcid: "https://orcid.org/0009-0004-1557-2156"
+    affiliation: "Japan Advanced Institute of Science and Technology"
+  - family-names: Racharak
+    given-names: Teeradaj
+    orcid: "https://orcid.org/0000-0002-8823-2361"
+    affiliation: "Tohoku University"
+preferred-citation:
+  type: conference-paper
+  title: "Heatmap-Guided Spatial Weighting Improves Class-Discriminative SAE Feature Vector Extraction in Vision Transformers"
+  authors:
+    - family-names: Yimmark
+      given-names: Chavakan
+    - family-names: Racharak
+      given-names: Teeradaj
+  year: 2026
+  # TODO: add collection-title (venue), pages and doi once published.
+references:
+  - type: conference-paper
+    title: "Sparse autoencoders reveal selective remapping of visual concepts during adaptation"
+    authors:
+      - family-names: Lim
+        given-names: Hyesu
+      - family-names: Choi
+        given-names: Jinho
+      - family-names: Choo
+        given-names: Jaegul
+      - family-names: Schneider
+        given-names: Steffen
+    collection-title: "The Thirteenth International Conference on Learning Representations (ICLR)"
+    year: 2025
+    url: "https://openreview.net/forum?id=imT03YXlG2"
+  - type: software
+    title: "PatchSAE"
+    repository-code: "https://github.com/dynamical-inference/patchsae"
+    license: MIT

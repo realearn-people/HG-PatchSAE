@@ -1,5 +1,10 @@
 # PatchSAE: Training & Usage Guide
 
+> Upstream PatchSAE documentation, kept for reference. HG-PatchSAE does not train
+> an SAE; it uses the released PatchSAE checkpoint. Note that in this repository
+> `--dataset_name imagenet` loads the ImageNet **validation** split (used for all
+> evaluations); use `imagenet-train` for the training split.
+
 ## 📋 Table of Contents
 - [Train SAE](#-train-sae)
 - [Extract SAE Latent Data](#-extract-sae-latent-data)
@@ -123,7 +128,7 @@ Evaluate classification using feature steering with SAE latents.
 
 ### Run with Original CLIP
 ```bash
-PYTHONPATH=./ python tasks/classification_with_top_k_masking.py \
+PYTHONPATH=./ python experiments/feature_faithfulness.py \
     --root_dir ./ \
     --dataset_name imagenet \
     --sae_path /PATH/TO/SAE_CKPT.pt \
@@ -132,7 +137,7 @@ PYTHONPATH=./ python tasks/classification_with_top_k_masking.py \
 
 ### Run with Adapted CLIP (e.g., MaPLe)
 ```bash
-PYTHONPATH=./ python tasks/classification_with_top_k_masking.py \
+PYTHONPATH=./ python experiments/feature_faithfulness.py \
     --root_dir ./ \
     --dataset_name imagenet \
     --sae_path /PATH/TO/SAE_CKPT.pt \

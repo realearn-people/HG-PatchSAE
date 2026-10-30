@@ -14,7 +14,13 @@ from src.sae_training.sparse_autoencoder import SparseAutoencoder
 
 # Dataset configurations
 DATASET_INFO = {
+    # HG-PatchSAE: "imagenet" is the validation split (all evaluations);
+    # the training split is available as "imagenet-train".
     "imagenet": {
+        "path": "evanarlian/imagenet_1k_resized_256",
+        "split": "val",
+    },
+    "imagenet-train": {
         "path": "evanarlian/imagenet_1k_resized_256",
         "split": "train",
     },
@@ -96,7 +102,9 @@ def load_and_organize_dataset(dataset_name: str) -> Tuple[list, Dict]:
     Requried for classification_with_top_k_masking.py and compute_class_wise_sae_activation.py
     """
     dataset = load_dataset(**DATASET_INFO[dataset_name])
-    classnames = get_classnames(dataset_name, dataset)
+    # HG-PatchSAE: class names (and hence text prompts) come from the
+    # dataset's own label names.
+    classnames = dataset.features["label"].names
 
     data_by_class = defaultdict(list)
     for data_item in tqdm(dataset):
@@ -231,11 +239,8 @@ def load_datasets(include_imagenet: bool = False, seed: int = 1):
             "imagenet-sketch": load_dataset(
                 "clip-benchmark/wds_imagenet_sketch", split="test"
             ).shuffle(seed=seed),
-            "caltech101": load_dataset(
-                "HuggingFaceM4/Caltech-101",
-                "with_background_category",
-                split="train",
-            ).shuffle(seed=seed),
+            # HG-PatchSAE: Caltech-101 is not loaded; only the ImageNet-Sketch
+            # statistics are needed for the noisy-feature filter.
         }
 
 

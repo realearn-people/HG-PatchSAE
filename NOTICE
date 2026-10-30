@@ -1,3 +1,20 @@
+HG-PatchSAE
+Copyright (c) 2026 Chavakan Yimmark, Teeradaj Racharak
+
+This repository is a modified version of PatchSAE
+(https://github.com/dynamical-inference/patchsae),
+Copyright (c) 2024-2025 Hyesu Lim, Jinho Choi, Jaegul Choo, Steffen Schneider,
+released under the MIT License (see LICENSE).
+
+The PatchSAE code lives in src/, tasks/ and configs/; experiments/feature_faithfulness.py
+is adapted from PatchSAE's tasks/classification_with_top_k_masking.py. Every
+change to an upstream file is marked with an "HG-PatchSAE:" comment and listed
+in README.md. hgpatchsae/, the other experiments/ scripts and scripts/ are new.
+
+The PatchSAE release includes code from the third-party repositories below.
+
+=================================================================================
+
 Code from the following third-party repositories was used.
 Please include the contents of the LICENSE as well this NOTICE file in all
 re-distributions of this code.

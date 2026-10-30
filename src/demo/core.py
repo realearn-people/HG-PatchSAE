@@ -405,8 +405,10 @@ class SAETester(VisualizeMixin, UtilMixin):
         return sae_act[:, :197, :]
 
     def _filter_out_nosiy_activation(self, features):
+        # HG-PatchSAE: statistics are loaded via load_datasets() without
+        # ImageNet, so the noise filter reads the "imagenet-sketch" means.
         noisy_features_indices = (
-            (self.mean_acts["imagenet"] > self.noisy_threshold).nonzero()[0].tolist()
+            (self.mean_acts["imagenet-sketch"] > self.noisy_threshold).nonzero()[0].tolist()
         )
         features_copy = deepcopy(features)
         if len(features_copy.shape) == 1:
