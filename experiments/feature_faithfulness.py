@@ -1,3 +1,25 @@
+"""
+feature_faithfulness.py
+=======================
+Top-K Feature Faithfulness (Sec. 4.5, Eq. 5). Adapted from PatchSAE.
+
+For each class c, the top-K SAE features of its prototype (from
+experiments/build_prototypes.py) are used to intervene on CLIP ViT-B/16 through
+the SAE while classifying that class's validation images zero-shot:
+
+    ON_K   all SAE features zeroed except the top-K
+    OFF_K  the top-K features zeroed, the rest kept
+
+metrics.csv has one column per class; row 0 is the unmodified ViT, followed by
+(ON_K, OFF_K) rows for each K in TOPK_LIST. FF(K) = ON_K - OFF_K.
+
+Usage (one prototype at a time; see scripts/02_feature_faithfulness.sh):
+    PYTHONPATH=. python experiments/feature_faithfulness.py \
+        --sae_path data/sae_weight/base/out.pt \
+        --cls_wise_sae_activation_path \
+            outputs/imagenet_130/prototypes/layercam/cls_hgpatchsae_130_train_ImageNet_cls0-1000.npy \
+        --save_name outputs/ff_masking
+"""
 import argparse
 from collections import defaultdict
 
@@ -52,10 +74,13 @@ def calculate_text_features(model, device, classnames):
 def create_sae_hooks(vit_type, cfg, cls_features, sae, device, hook_type="on"):
     """Create SAE hooks based on model type and hook type."""
     # Setup clamping parameters
-    clamp_feat_dim = torch.ones(SAE_DIM).bool()
-    clamp_value = torch.zeros(SAE_DIM) if hook_type == "on" else torch.ones(SAE_DIM)
-    clamp_value = clamp_value.to(device)
-    clamp_value[cls_features] = 1.0 if hook_type == "on" else 0.0
+    clamp_feat_dim = torch.ones(SAE_DIM, dtype=torch.bool, device=device)
+    if hook_type == "on":   # keep only the class's top-K features
+        clamp_value = torch.zeros(SAE_DIM, device=device)
+        clamp_value[cls_features] = 1.0
+    else:                   # "off": zero the class's top-K features
+        clamp_value = torch.ones(SAE_DIM, device=device)
+        clamp_value[cls_features] = 0.0
 
     def process_activations(activations, is_maple=False):
         """Helper function to process activations with SAE"""
@@ -89,6 +114,7 @@ def create_sae_hooks(vit_type, cfg, cls_features, sae, device, hook_type="on"):
             is_custom=is_custom,
         )
     ]
+
 
 
 def get_predictions(vit, inputs, text_features, vit_type, hooks=None):
@@ -175,7 +201,12 @@ def main(
     config_path: str = None,
     cls_wise_sae_activation_path: str = None,
 ):
-    class_feature_type = cls_wise_sae_activation_path.split("/")[-3]
+    # Results go to <root>/<save_name>/sae_<run>/<method>/<prototype>_<vit>/<dataset>/,
+    # e.g. sae_base/layercam/cls_hgpatchsae_130_train_ImageNet_cls0-1000_base/imagenet/
+    parts = cls_wise_sae_activation_path.replace("\\", "/").split("/")
+    fname = parts[-1].replace(".npy", "")  # cls_hgpatchsae_<tag>
+    method_dir = parts[-2] if len(parts) >= 2 else "unknown"
+    class_feature_type = f"{method_dir}/{fname}"
     save_directory = setup_save_directory(
         root_dir, save_name, sae_path, f"{class_feature_type}_{vit_type}", dataset_name
     )
@@ -252,6 +283,7 @@ if __name__ == "__main__":
         help="CLIP config path in the case of using maple",
     )
     parser.add_argument("--device", type=str, default="cuda")
+    parser.add_argument("--save_name", type=str, default="out/feature_data/optimized")
 
     args = parser.parse_args()
 
@@ -261,7 +293,7 @@ if __name__ == "__main__":
         device=args.device,
         dataset_name=args.dataset_name,
         root_dir=args.root_dir,
-        save_name="out/feature_data",
+        save_name=args.save_name,
         batch_size=args.batch_size,
         model_path=args.model_path,
         config_path=args.config_path,

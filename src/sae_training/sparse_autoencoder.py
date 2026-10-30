@@ -195,14 +195,15 @@ class SparseAutoencoder(HookedRootModule):
         )
         feature_acts = self.hook_hidden_post(torch.nn.functional.relu(hidden_pre))
 
-        # TODO: make it compatible with args.steer_option
-        # for option 1)
-        # feature_acts[:, clamp_feat_dim] = feature_acts[:, clamp_feat_dim] * clamp_value
-
-        # for option 3)
-        feature_acts = (
-            feature_acts[:, :, clamp_feat_dim] * clamp_value
-        )  # TODO: check if this is compatabile for both cls and non-cls SAE
+        # HG-PatchSAE: clamp_feat_dim is a boolean mask over SAE features. The
+        # upstream indexing (feature_acts[:, :, clamp_feat_dim]) dropped the
+        # unselected features, which breaks the decoder for a partial mask;
+        # zero them instead, then scale by clamp_value. For an all-True mask
+        # (as in Top-K masking) both versions give the same result.
+        if clamp_feat_dim is not None:
+            clamp_mask = clamp_feat_dim.float()
+            feature_acts = feature_acts * clamp_mask.unsqueeze(0).unsqueeze(0)
+            feature_acts = feature_acts * clamp_value
 
         sae_out = self.hook_sae_out(
             einops.einsum(
